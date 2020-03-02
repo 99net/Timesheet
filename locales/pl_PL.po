@@ -1,0 +1,17 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: pl_PL\n"
+
+msgid "Attach to Project"
+msgstr "Rozlicz w projekcie"
+
+msgid "Detach from Project"
+msgstr "Odepnij od projektu"
+
+msgid "Delete"
+msgstr "Usuń"
+
+msgid "Add Project"
+msgstr "Dodaj Projekt"
