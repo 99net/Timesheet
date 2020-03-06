@@ -1,3 +1,3 @@
 # Timesheet for GLPI
 
-Task and Time Management in GLPI system
+Task and Time Management for GLPI system
