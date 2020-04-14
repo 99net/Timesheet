@@ -136,7 +136,7 @@ class PluginTimesheetProfile extends Profile
     static function getAllRights($all = false)
     {
         $rights = [
-            ['rights' => [READ => __('Read'), CREATE => __('Create'), DELETE => __('Delete')],
+            ['rights' => [READ => __('Read'), CREATE => __('Create'), UPDATE => __('Update'), DELETE => __('Delete'), PluginTimesheetTimesheet::READ_PRIVATE => __('See private ones')],
                 'label' => __('Timesheets'),
                 'field' => 'plugin_timesheet_timesheet'],
         ];

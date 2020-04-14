@@ -2,6 +2,17 @@
 
 class PluginTimesheetTimesheet extends CommonDBTM
 {
+    const READ_PRIVATE = 1024;
+
+    function getRights($interface = 'central')
+    {
+        $values = parent::getRights();
+
+        $values[self::READ_PRIVATE] = array('short' => __('See private ones'),
+            'long' => __('Show Timesheets from Task set as private'));
+
+        return $values;
+    }
 
     public static $rightname = 'plugin_timesheet_timesheet';
 
@@ -146,20 +157,10 @@ class PluginTimesheetTimesheet extends CommonDBTM
 
         $tab[] = [
             'id' => '4',
-            'table' => 'glpi_users',
-            'field' => 'user_fullname',
-            'linkfield' => 'users_id_tech',
-            'datatype' => 'itemlink',
+            'table' => self::getTable(),
+            'field' => 'users_id_tech',
             'name' => __('User'),
-            'computation' => "ifnull(CONCAT(TABLE.`firstname`, ' ', TABLE.`realname`), TABLE.`name`)",
-            'joinparams' => [
-                'beforejoin' => [
-                    'table' => self::getTable(),
-                    'joinparams' => [
-                        'jointype' => 'empty'
-                    ]
-                ]
-            ]
+            'datatype' => 'specific',
         ];
 
         $tab[] = [
@@ -193,6 +194,14 @@ class PluginTimesheetTimesheet extends CommonDBTM
                     ]
                 ]
             ]
+        ];
+
+        $tab[] = [
+            'id' => '38',
+            'table' => 'glpi_tickettasks',
+            'field' => 'is_private',
+            'name' => __('Private'),
+            'datatype' => 'bool'
         ];
 
         $tab[] = [
@@ -234,7 +243,13 @@ class PluginTimesheetTimesheet extends CommonDBTM
                 $Ticket = new Ticket();
                 $Ticket->getFromDB($Task->getField('tickets_id'));
                 return sprintf('[%s #%07d] %s', 'GLPI Zgłoszenie', $Task->getField('tickets_id'), $Ticket->getField('name'));
-
+            case 'users_id_tech':
+                $userdata = getUserName($values[$field], 2);
+                $tooltip = Html::showToolTip($userdata["comment"], [
+                    'link' => $userdata["link"],
+                    'display' => false
+                ]);
+                return $userdata['name'] . ' ' . $tooltip;
         }
 
         return parent::getSpecificValueToDisplay($field, $values, $options);
@@ -366,16 +381,24 @@ class PluginTimesheetTimesheet extends CommonDBTM
         if (isset($_GET['order']) && !empty($_GET['order'])) {
             $order = $_GET['order'];
         } else {
-            $order = 'ASC';
+            $order = 'DESC';
         }
 
         if (isset($_GET['sort']) && !empty($_GET['sort'])) {
             $sort = $_GET['sort'];
         } else {
-            $sort = 'id';
+            $sort = 'task_date_creation';
         }
 
         $dbu = new DbUtils();
+
+        if (Session::haveRight(self::$rightname, self::READ_PRIVATE)) {
+            $is_private_filter = [];
+        } else {
+            $is_private_filter = [
+                'glpi_tickettasks.is_private' => 0
+            ];
+        }
 
         $ID = $item->getID();
         $iterator = $DB->request([
@@ -391,12 +414,13 @@ class PluginTimesheetTimesheet extends CommonDBTM
                 'glpi_plugin_timesheet_timesheets.task_date_creation',
                 'glpi_entities.completename',
                 'glpi_entities.id as entity_id',
+                'glpi_tickettasks.is_private',
                 new \QueryExpression('ifnull(concat(`glpi_users`.`firstname`," ", `glpi_users`.`realname`), `glpi_users`.`name`) as `fullname`'),
             ],
             'FROM' => 'glpi_plugin_timesheet_timesheets',
             'WHERE' => [
-                'projects_id' => $ID,
-            ] + $dbu->getEntitiesRestrictCriteria("glpi_tickets"),
+                    'projects_id' => $ID,
+                ] + $dbu->getEntitiesRestrictCriteria("glpi_tickets") + $is_private_filter,
             'LEFT JOIN' => [
                 'glpi_users' => [
                     'FKEY' => [
@@ -467,8 +491,9 @@ class PluginTimesheetTimesheet extends CommonDBTM
             $header .= "<th" . ($sort == "tickettasks_id" ? " class='order_$order'" : '') . "><a href='javascript:reloadTab(\"sort=tickettasks_id&amp;order=" . (($order == "ASC") ? "DESC" : "ASC") . "&amp;start=0\");'>" . __('Task') . "</a></th>";
             $header .= "<th" . ($sort == "completename" ? " class='order_$order'" : '') . "><a href='javascript:reloadTab(\"sort=completename&amp;order=" . (($order == "ASC") ? "DESC" : "ASC") . "&amp;start=0\");'>" . __('Entity') . "</a></th>";
             $header .= "<th" . ($sort == "actiontime" ? " class='order_$order'" : '') . "><a href='javascript:reloadTab(\"sort=actiontime&amp;order=" . (($order == "ASC") ? "DESC" : "ASC") . "&amp;start=0\");'>" . __('Duration') . "</a></th>";
-            $header .= "<th" . ($sort == "task_date_creation" ? " class='order_$order'" : '') . "><a href='javascript:reloadTab(\"sort=task_date_creation&amp;order=" . (($order == "ASC") ? "DESC" : "ASC") . "&amp;start=0\");'>" . __('Date') . "</a></th>";
+            $header .= "<th" . ($sort == "task_date_creation" ? " class='order_$order'" : '') . " style=\"width:150px\"><a href='javascript:reloadTab(\"sort=task_date_creation&amp;order=" . (($order == "ASC") ? "DESC" : "ASC") . "&amp;start=0\");'>" . __('Date') . "</a></th>";
             $header .= "<th" . ($sort == "fullname" ? " class='order_$order'" : '') . "><a href='javascript:reloadTab(\"sort=fullname&amp;order=" . (($order == "ASC") ? "DESC" : "ASC") . "&amp;start=0\");'>" . __('User') . "</a></th>";
+            $header .= "<th" . ($sort == "is_private" ? " class='order_$order'" : '') . "><a href='javascript:reloadTab(\"sort=is_private&amp;order=" . (($order == "ASC") ? "DESC" : "ASC") . "&amp;start=0\");'>" . __('Private') . "</a></th>";
             $header .= "<th" . ($sort == "content" ? " class='order_$order'" : '') . "><a href='javascript:reloadTab(\"sort=content&amp;order=" . (($order == "ASC") ? "DESC" : "ASC") . "&amp;start=0\");'>" . __('Comment') . "</a></th>";
             $header .= "</tr>";
             echo $header;
@@ -486,12 +511,19 @@ class PluginTimesheetTimesheet extends CommonDBTM
 
                 $date = new \DateTime($item['task_date_creation']);
 
+                $userdata = getUserName($item['users_id_tech'], 2);
+                $tooltip = Html::showToolTip($userdata["comment"], [
+                    'link' => $userdata["link"],
+                    'display' => false
+                ]);
+
                 echo "<td style='text-align:right'>" . $item['id'] . "</td>" .
                     "<td style='text-align:left'>" . (empty($item['tickettasks_id']) ? '' : sprintf('[%s #%07d] %s', 'GLPI Zgłoszenie', $item['ticket_id'], $item['ticket_name'])) . "</td>" .
                     "<td style='text-align:left'><a href=\"/front/entity.form.php?id=" . $item['entity_id'] . "\">" . $item['completename'] . "</a></td>" .
                     "<td style='text-align:right'>" . Html::timestampToString($item['actiontime'], false, false) . "</td>" .
-                    "<td style='text-align:right'>" . $date->format('Y-m-d') . "</td>" .
-                    "<td style='text-align:center'><a href=\"/front/users.form.php?id=" . $item['users_id_tech'] . "\">" . $item['fullname'] . "</a></td>" .
+                    "<td style='text-align:center'>" . $date->format('Y-m-d') . "</td>" .
+                    "<td style='text-align:center'>" . $userdata['name'] . "&nbsp;" . $tooltip . "</td>" .
+                    "<td style='text-align:center'>" . ($item['is_private'] ? __('Yes') : __('No')) . "</td>" .
                     "<td>" . $item['content'] . "</td>" .
                     "<td></td>";
                 echo "</tr>";
