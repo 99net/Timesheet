@@ -1,6 +1,6 @@
 <?php
 
-define('TIMESHEET_VERSION', '1.0.0');
+define('TIMESHEET_VERSION', '1.0.1');
 
 if (!defined("PLUGIN_TIMESHEET_DIR")) {
     define("PLUGIN_TIMESHEET_DIR", GLPI_ROOT . "/plugins/timesheet");
@@ -50,16 +50,16 @@ function plugin_version_timesheet()
         'author' => '<a href="https://99net.pl">99NET</a>',
         'license' => 'GPLv2+',
         'homepage' => 'https://99net.pl',
-        'minGlpiVersion' => '9.4.5'
+        'minGlpiVersion' => '9.4.4'
     );
 }
 
 function plugin_timesheet_check_prerequisites()
 {
-    if (GLPI_VERSION >= '9.4.5')
+    if (GLPI_VERSION >= '9.4.4')
         return true;
     else
-        echo "GLPI version not compatible need 9.4.5";
+        echo "GLPI version not compatible need 9.4.4";
 }
 
 
