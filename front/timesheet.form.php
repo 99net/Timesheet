@@ -64,8 +64,20 @@ if (isset($_POST["add"])) {
 
 } else if (isset($_POST["update"])) {
     $ts->check($_POST["id"], UPDATE);
-
     $ts->update($_POST);
+
+    $ts->getFromDB($_POST["id"]);
+    $content = html_entity_decode(
+        $ts->getField('content'),
+        ENT_NOQUOTES | ENT_HTML5
+    );
+
+    $DB->update(
+        'glpi_plugin_timesheet_timesheets',
+        ['content' => $content],
+        ['id' => $_POST["id"]]
+    );
+
     Html::back();
 
 } else {
@@ -92,9 +104,7 @@ if(isset($_GET['id'])) {
 Session::checkRight('plugin_timesheet_timesheet', CREATE);
 
 $timesheet = new PluginTimesheetTimesheet();
-$timesheet->display($_GET);
-
-
 */
+//$ts->display($_GET);
 
 Html::footer();
