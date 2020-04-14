@@ -32,6 +32,25 @@ function plugin_timesheet_tickettask_update(TicketTask $item)
     //}
 }
 
+function plugin_timesheet_addDefaultJoin($type, $ref_table, &$already_link_tables) {
+    switch ($type) {
+        case 'PluginTimesheetTimesheet' :
+            return Search::addLeftJoin($type, $ref_table, $already_link_tables,
+                'glpi_tickettasks', 'tickettasks_id');
+    }
+    return "";
+}
+
+function plugin_timesheet_addDefaultWhere($type)
+{
+    switch ($type) {
+        case 'PluginTimesheetTimesheet':
+            if (!Session::haveRight(PluginTimesheetTimesheet::$rightname, PluginTimesheetTimesheet::READ_PRIVATE))
+                return " `glpi_tickettasks`.`is_private` = 0 ";
+    }
+    return "";
+}
+
 /*
  *
 function plugin_timesheet_MassiveActions($type)
