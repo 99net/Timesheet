@@ -10,7 +10,16 @@
 			<lang>...</lang>
 		</short>
 		<long>
-			<en>The plugin collects the time of tasks registered in GLPI orders. It allows them to be settled and pinned to projects.</en>
+			<en>
+			Features: <br />
+			    1. Automatic task and time export to Timesheet <br />
+			    2. Manual task add and edit <br />
+			    3. Attach to project <br />
+			    4. Export to PDF, SLK <br />
+			    5. Filters and columns <br />
+			    6. Private and public task view <br />
+			
+		  </en>
 			<lang>...</lang>
 		</long>
 	</description>
