@@ -9,7 +9,7 @@ if (!defined("PLUGIN_TIMESHEET_DIR")) {
 function plugin_init_timesheet()
 {
     global $PLUGIN_HOOKS, $LANG;
-    $PLUGIN_HOOKS['csrf_compliant']['timesheet'] = true;
+    $PLUGIN_HOOKS['csrf_compliant']['Timesheet'] = true;
 
     $plugin = new Plugin();
     if ($plugin->isActivated('timesheet')) {
