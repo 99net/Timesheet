@@ -50,13 +50,13 @@ function plugin_version_timesheet()
         'author' => '<a href="https://99net.pl">99NET</a>',
         'license' => 'GPLv2+',
         'homepage' => 'https://99net.pl',
-        'minGlpiVersion' => '9.4.4'
+        'minGlpiVersion' => '9.5.1'
     );
 }
 
 function plugin_timesheet_check_prerequisites()
 {
-    if (GLPI_VERSION >= '9.4.4')
+    if (GLPI_VERSION >= '9.5.1')
         return true;
     else
         echo "GLPI version not compatible need 9.4.4";
